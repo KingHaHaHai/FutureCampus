@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 触摸模式下单击时的背景图片-->
+    <item android:drawable="@drawable/btn_background_open_right_drawer_layout_press" android:state_pressed="true" />
+    <!-- 默认时的背景图片-->
+    <item android:drawable="@drawable/btn_background_open_right_drawer_layout_shape" />
+</selector>
+
+
+
