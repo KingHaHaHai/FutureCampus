@@ -26,6 +26,7 @@ class UsedByStudentMainActivity : AppCompatActivity() {
 
     private var mWebView_main: WebView? = null
     private var mImageView_Gpt_Icon: ImageView? = null
+    private var mImageView_note_Icon: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,9 +88,30 @@ class UsedByStudentMainActivity : AppCompatActivity() {
             startActivity(intent)
 
         }
+        mImageView_note_Icon = findViewById<ImageView>(R.id.Iv_note_Icon)
+        mImageView_note_Icon!!.setOnClickListener {
+            // 设置Activity样式
+            window.setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+
+            // 设置Activity位置和边界
+            window.setGravity(Gravity.TOP or Gravity.LEFT)
+            window.setFlags(
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+            )
+
+            val intent = Intent(this, NoteActivity::class.java)
+            startActivity(intent)
+
+        }
 
     }
 
+
+    // 自动距离调整
 
 
 
