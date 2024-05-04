@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-
+    id("kotlin-kapt")
     //id("com.chaquo.python")
 }
 
@@ -112,5 +112,10 @@ dependencies {
 
     // webview
      implementation("androidx.webkit:webkit:1.10.0")
+
+    implementation("androidx.room:room-runtime:2.6.1")
+    kapt("androidx.room:room-compiler:2.6.1")
+
+    implementation("androidx.sqlite:sqlite:2.4.0")
 
 }

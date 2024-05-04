@@ -1,3 +1,5 @@
 package mo.edu.kaoyip.kyrobot.futurecampus.view.note
 
-data class Note(var content: String)
+import java.util.Date
+
+data class Note(var timeDate: String, var content: String)

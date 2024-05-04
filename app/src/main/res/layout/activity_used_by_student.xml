@@ -31,37 +31,125 @@
     </RelativeLayout>
 
     <!-- 右侧滑动栏 -->
+
     <RelativeLayout
         android:id="@+id/main_right_drawer_layout"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:background="@color/colorPrimary">
-
+        android:background="#B2B5F1C4">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:layout_margin="20dp"
             android:gravity="center_horizontal">
+
             <ImageView
                 android:id="@+id/Iv_Gpt_Icon"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ai"/>
+                android:layout_height="100dp"
+                android:src="@drawable/ai"
+                android:layout_marginBottom="20dp"/>
+
             <ImageView
                 android:id="@+id/Iv_note_Icon"
                 android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:src="@drawable/edit_icon"
+                android:layout_marginBottom="20dp"/>
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:src="@drawable/Edit_icon"/>
+                android:orientation="horizontal">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="是否启用自动调节"/>
+                <Switch
+                    android:id="@+id/switchControlButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_feedback"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="意见反馈"
+                android:textSize="20sp"
+                android:layout_marginBottom="20dp"/>
+
+            <LinearLayout
+                android:id="@+id/ll_control_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone">
+
+                <Button
+                    android:id="@+id/btnUp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="前" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/btnLeft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="升" />
+
+                    <Button
+                        android:id="@+id/btnreset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="重置" />
+
+                    <Button
+                        android:id="@+id/btnRight"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="降" />
+
+                </LinearLayout>
+
+                <Button
+                    android:id="@+id/btnDown"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="后" />
+
+            </LinearLayout>
+
+
+            <SurfaceView
+                android:id="@+id/surface_view_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                />
+
+
+
         </LinearLayout>
 
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="右边菜单测试" />
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_centerInParent="true"-->
+<!--            android:text="右边菜单测试" />-->
     </RelativeLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

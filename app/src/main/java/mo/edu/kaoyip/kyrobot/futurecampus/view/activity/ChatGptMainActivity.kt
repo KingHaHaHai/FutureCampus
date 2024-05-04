@@ -1,5 +1,6 @@
 package mo.edu.kaoyip.kyrobot.futurecampus.view.activity
 
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -12,8 +13,11 @@ import mo.edu.kaoyip.kyrobot.futurecampus.R
 import mo.edu.kaoyip.kyrobot.futurecampus.view.MsgAdapter
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.FormBody
 import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -21,6 +25,7 @@ import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -90,6 +95,45 @@ class ChatGptMainActivity: AppCompatActivity() {
         send!!.setOnClickListener {
             var content: String = inputText!!.getText().toString()
             if (content != "") {
+
+                Thread{
+                    val uploadUrl: String = "http://${MainActivity.mMastersIp!!.split(":")[0]}:14515/api/gptUpload"
+
+                    // Create a JSON object with the required fields
+                    val json = JSONObject()
+                    json.put("stdId", MainActivity.userID)
+                    json.put("quest", content)
+
+                    // Create the request body
+                    val requestBody: RequestBody = RequestBody.create("application/json".toMediaTypeOrNull(), json.toString())
+                    val request = Request.Builder()
+                        .url(uploadUrl) // 设置请求的 URL
+                        .post(requestBody)
+                        .build()
+
+                    client.newCall(request).enqueue(object : Callback {
+                        override fun onFailure(call: Call, e: IOException) {
+                            // 请求失败的处理
+                            e.printStackTrace()
+                        }
+
+                        override fun onResponse(call: Call, response: Response) {
+                            // 请求成功的处理
+                            val responseData = response.body?.string()
+                            Log.d("ChatGptMainActivity", "onResponse: $responseData")
+                        }
+                    })
+
+                }.start()
+
+
+
+
+
+
+
+
+
                 msgList.add(Msg(content, Msg.TYPE_SEND))
                 adapter!!.notifyItemInserted(msgList.size - 1)
                 msgRecyclerView!!.scrollToPosition(msgList.size - 1)

@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
     private var mPermanentBackgroundOperation: Thread? = null
     var mPermanentBackgroundOperation_State: Boolean? = true
 
-    var mMastersIp: String? = null
+//    var mMastersIp: String? = null
 
     var mPortListener: PortListener = PortListener(14514)
 
@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
         })
 
     }
+
 
     // OpenCV 人脸检测
     private var openCvCameraView: CameraBridgeViewBase? = null
@@ -129,7 +130,7 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
         mTv_message = findViewById<TextView>(R.id.tv_information)
         mTv_textLocalIp = findViewById<TextView>(R.id.tv_localIp)
         mTv_textLocalIp!!.setOnClickListener {
-            val intent = Intent(this, testActivity::class.java)
+            val intent = Intent(this, NoteActivity::class.java)
             startActivity(intent)
         }
 
@@ -183,6 +184,8 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
 
     companion object{
         private const val TAG = "MainActivity"
+        var mMastersIp: String? = null
+        var userID: String? = null
     }
 
     @RequiresApi(Build.VERSION_CODES.R)
@@ -339,31 +342,36 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
                         jsonObject = JSONObject(response.body!!.string())
                     }catch (e: JSONException){
                         Log.e(TAG, "jsonObject: " + e.message)
-                        Log.e(TAG, "ERRRR: " + response.body!!.string())
+                        Log.e(TAG, "ERRRR: " + response.body!!)
 
-                        return@Thread
+                        // return@Thread
                     }
 
                     Log.i(TAG, "stateCode: " + response.code)
                     Log.i(TAG, "jsonObject: " + jsonObject)
+                    Log.i(TAG, "jsonObject: " + jsonObject!!.getString("result"))
 
                     try{
-                        if (jsonObject.getString("result") == "sTu"){
+                        if (jsonObject!!.getString("result") == "sTu"){
                             isFaceDataPass = true
+                            userID = jsonObject.getString("userId")
                             Log.i(TAG, "人脸数据通过")
                             return@Thread
+                        }else{
+                            Log.i(TAG, "人脸数据未通过")
+                            runOnUiThread{ mTv_message!!.text = "人脸数据未通过，请重试，将在3秒后重启" }
+                            Thread.sleep(3000)
+                            val intent = baseContext.packageManager.getLaunchIntentForPackage(
+                                baseContext.packageName
+                            )
+                            intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                            startActivity(intent)
+                            this@MainActivity.finish()
                         }
+
                     }catch (e: Exception){}
 
-                    Log.i(TAG, "人脸数据未通过")
-                    runOnUiThread{ mTv_message!!.text = "人脸数据未通过，请重试，将在3秒后重启" }
-                    Thread.sleep(3000)
-                    val intent = baseContext.packageManager.getLaunchIntentForPackage(
-                        baseContext.packageName
-                    )
-                    intent!!.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                    startActivity(intent)
-                    this@MainActivity.finish()
+
                 }.start()
 
             }
@@ -385,7 +393,7 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
             LayoutInflater.from(this@MainActivity).inflate(R.layout.dialog_privacy_show, null)
 
         val tv_content = inflate.findViewById<View>(R.id.tv_content) as TextView
-        tv_content.setText("")
+        tv_content.setText("一、 蒐集個人資料之目的\n本服務為執行資源利用與服務推廣相關業務所需，蒐集您的個人資料。\n二、 蒐集個人資料之類別\n本服務因執行業務蒐集您的個人資料包括中文姓名、公司名稱、連絡電話與電子郵件地址，詳如電子郵件訂閱表，電子資源廠商將使用 cookies 進行各項網路資源服務之管理及記錄，包括蒐集 IP 位址、瀏覽網頁、使用檔案及時間等軌跡資料。\n三、 個人資料利用之期間、地區、對象與方式\n本服務蒐集之存續期間或因執行業務所需保存期間內，得合理利用您的個人資料，利用地區不限；本服務利用您的個人資料於蒐集目的宣告之各項業務執行，包括因業務執行所必須之各項聯繫與通知；本司利用各項網路資源服務使用紀錄，進行總體流量、使用行為研究及加值應用，以提昇網站服務品質，不針對個別使用者分析。\n四、 個人資料之提供\n您可自由選擇是否提供相關個人資料，惟若拒絕提供個人資料，本司將無法提供相關服務，請依各項服務需求提供您本人正確、最新及完整的個人資料，若您的個人資料有任何異動，請主動向本司申請更正，若您提供錯誤、過時、不完整或具誤導性的資料，而損及您的相關權益，本司將不負相關賠償責任。")
         dialog = AlertDialog.Builder(this@MainActivity)
             .setView(inflate)
             .setCancelable(false)
