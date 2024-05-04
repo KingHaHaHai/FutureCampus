@@ -25,9 +25,6 @@ local.properties
 /OpenCV490/native/libs/x86/
 /OpenCV490/native/libs/x86_64/
 /OpenCV490/native/libs/armeabi-v7a/
-/OpenCV490/native/jni/x86/
-/OpenCV490/native/jni/x86_64/
-/OpenCV490/native/jni/armeabi-v7a/
-/OpenCV490/native/3dparty/x86/
-/OpenCV490/native/3dparty/x86_64/
-/OpenCV490/native/3dparty/armeabi-v7a/
+/OpenCV490/native/3dparty/libs/x86/
+/OpenCV490/native/3dparty/libs/x86_64/
+/OpenCV490/native/3dparty/libs/armeabi-v7a/
