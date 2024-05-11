@@ -27,6 +27,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
+import android.provider.Settings
 import android.util.Log
 import android.util.Size
 import android.view.Gravity
@@ -52,6 +53,9 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import mo.edu.kaoyip.kyrobot.futurecampus.R
+import mo.edu.kaoyip.kyrobot.futurecampus.utils.BluetoothManager
+import mo.edu.kaoyip.kyrobot.futurecampus.utils.network.NetworkMessage
+import mo.edu.kaoyip.kyrobot.futurecampus.utils.network.ScanDeviceTool
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -69,10 +73,13 @@ import org.opencv.core.Point
 import org.opencv.core.Scalar
 import org.opencv.imgproc.Imgproc
 import org.opencv.objdetect.CascadeClassifier
+import java.io.BufferedInputStream
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.nio.ByteBuffer
+import java.io.InputStreamReader
+import java.net.ServerSocket
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Collections
@@ -227,11 +234,13 @@ class UsedByStudentMainActivity : AppCompatActivity() {
                 // 执行相应的操作
                 mLyOll_control_button.visibility = View.GONE
                 isAutoControl = true
+                bleManger?.send(-10086)
             } else {
                 // Switch未被选中
                 // 执行相应的操作
                 mLyOll_control_button.visibility = View.VISIBLE
                 isAutoControl = false
+                bleManger?.send(-10086)
             }
         }
 
@@ -241,21 +250,23 @@ class UsedByStudentMainActivity : AppCompatActivity() {
         var mBtnLeft = findViewById<Button>(R.id.btnLeft)
         var mBtnRight = findViewById<Button>(R.id.btnRight)
         var mbtnreset = findViewById<Button>(R.id.btnreset)
-        mbtnreset.setOnClickListener { sendBle(80) }
+        mbtnreset.setOnClickListener { bleManger?.send(80) }
         mBtnUp.setOnClickListener{
             // 向前
 //            sendBle(4)
             Thread{
                 //qian
-                if(socket != null) {
-                    return@Thread
-                }
-                //sendBle("G")
-                sendBle(77)
-                //ting
-                Thread.sleep(100)
-                // ting
-                sendBle(79)
+//                if(socket != null) {
+//                    return@Thread
+//                }
+//                //sendBle("G")
+//                sendBle(77)
+//                //ting
+//                Thread.sleep(100)
+//                // ting
+//                sendBle(79)
+                bleManger?.send(77)
+                bleManger?.send(79)
 
             }.start()
         }
@@ -264,15 +275,17 @@ class UsedByStudentMainActivity : AppCompatActivity() {
 //            sendBle(4)
             Thread{
                 //qian
-                if(socket != null) {
-                    return@Thread
-                }
-                //sendBle("G")
-                sendBle(78)
-                //ting
-                Thread.sleep(100)
-                // ting
-                sendBle(79)
+//                if(socket != null) {
+//                    return@Thread
+//                }
+//                //sendBle("G")
+//                sendBle(78)
+//                //ting
+//                Thread.sleep(100)
+//                // ting
+//                sendBle(79)
+                bleManger?.send(78)
+                bleManger?.send(79)
 
             }.start()
         }
@@ -281,15 +294,17 @@ class UsedByStudentMainActivity : AppCompatActivity() {
 //            sendBle(4)
             Thread{
                 //qian
-                if(socket != null) {
-                    return@Thread
-                }
-                //sendBle("G")
-                sendBle(71)
-                //ting
-                Thread.sleep(100)
-                 sendBle(72)
+//                if(socket != null) {
+//                    return@Thread
+//                }
+//                //sendBle("G")
+//                sendBle(71)
+//                //ting
+//                Thread.sleep(100)
+//                 sendBle(72)
                 // ting
+                bleManger?.send(71)
+                bleManger?.send(72)
 
             }.start()
         }
@@ -298,7 +313,7 @@ class UsedByStudentMainActivity : AppCompatActivity() {
 //            sendBle(4)
             Thread{
                 //qian
-                if(socket != null) {
+                /*if(socket != null) {
                     return@Thread
                 }
                 //sendBle("G")
@@ -306,7 +321,9 @@ class UsedByStudentMainActivity : AppCompatActivity() {
                 //ting
                 Thread.sleep(100)
                 // ting
-                sendBle(72)
+                sendBle(72)*/
+                bleManger?.send(70)
+                bleManger?.send(72)
 
             }.start()
         }
@@ -316,6 +333,147 @@ class UsedByStudentMainActivity : AppCompatActivity() {
         initDistenDectector()
         initBle()
 
+        // TODO: 全局通知。。。
+
+        //悬浮窗权限检查
+        // DialogX.globalHoverWindow = true;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(
+                    this,
+                    "使用 DialogX.globalHoverWindow 必须开启悬浮窗权限",
+                    Toast.LENGTH_LONG
+                ).show()
+                val intent = Intent()
+                intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                startActivity(intent)
+                return
+            }
+        }
+
+        Thread{
+            /*
+            import socket
+            import os
+
+            def send_text_data(text):
+                # 连接服务器
+                server_address = ('localhost', 5000)  # 服务器地址和端口号
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client_socket.connect(server_address)
+
+                # 发送数据类型标识（0表示文本）
+                client_socket.sendall(b'\x00')
+
+                # 发送文本数据
+                client_socket.sendall(text.encode())
+
+                # 关闭连接
+                client_socket.close()
+
+            def send_image_data(image_path):
+                # 连接服务器
+                server_address = ('localhost', 5000)  # 服务器地址和端口号
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client_socket.connect(server_address)
+
+                # 发送数据类型标识（1表示图片）
+                client_socket.sendall(b'\x01')
+
+                # 发送图片数据
+                with open(image_path, 'rb') as file:
+                    while True:
+                        data = file.read(1024)
+                        if not data:
+                            break
+                        client_socket.sendall(data)
+
+                # 关闭连接
+                client_socket.close()
+
+            # 发送文本数据示例
+            text_data = "Hello, Server!"
+            send_text_data(text_data)
+
+            # 发送图片数据示例
+            image_path = "path/to/image.jpg"
+            send_image_data(image_path)
+            */
+
+
+
+            try {
+                var port = 14516
+                val bufferSize = 8192 // 缓冲区大小
+                val serverSocket = ServerSocket(port)
+                println("服务器正在监听端口 $port...")
+
+                while (true) {
+                    val clientSocket = serverSocket.accept()
+                    println("客户端已连接：${clientSocket.inetAddress.hostAddress}:${clientSocket.port}")
+
+                    val inputStream = clientSocket.getInputStream()
+                    val bufferedInputStream = BufferedInputStream(inputStream)
+
+                    val dataType = bufferedInputStream.read() // 读取数据类型（0表示文本，1表示图片）
+
+                    if (dataType == 0) {
+                        // 文本数据
+                        val inputStreamReader = InputStreamReader(bufferedInputStream)
+                        val bufferedReader = BufferedReader(inputStreamReader)
+
+                        val stringBuilder = StringBuilder()
+                        var line: String?
+                        while (bufferedReader.readLine().also { line = it } != null) {
+                            stringBuilder.append(line).append("\n")
+                        }
+
+                        val receivedText = stringBuilder.toString()
+                        println("接收到的文本：$receivedText")
+
+                        // 处理接收到的文本数据
+                        handleReceivedText(receivedText)
+
+                        bufferedReader.close()
+                        inputStreamReader.close()
+                    } else if (dataType == 1) {
+                        // 图片数据
+                        val outputFile = File.createTempFile("received", ".jpg")
+                        val fileOutputStream = FileOutputStream(outputFile)
+
+                        val buffer = ByteArray(bufferSize)
+                        var bytesRead: Int
+                        while (bufferedInputStream.read(buffer).also { bytesRead = it } != -1) {
+                            fileOutputStream.write(buffer, 0, bytesRead)
+                        }
+
+                        fileOutputStream.close()
+                        println("数据已接收并保存到文件：${outputFile.absolutePath}")
+
+                        // 处理接收到的图片数据
+                        handleReceivedImage(outputFile)
+                    }
+
+                    bufferedInputStream.close()
+                    inputStream.close()
+                    clientSocket.close()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+
+    }
+
+
+    private fun handleReceivedText(text: String) {
+        // 处理接收到的文本数据
+        println("处理接收到的文本数据：$text")
+    }
+
+    private fun handleReceivedImage(imageFile: File) {
+        // 处理接收到的图片数据
+        println("处理接收到的图片数据：${imageFile.absolutePath}")
     }
 
     private var upLoadThread: Thread? = null
@@ -369,13 +527,51 @@ class UsedByStudentMainActivity : AppCompatActivity() {
     // 00:18:E4:40:00:06
 
     private var socket: BluetoothSocket? = null
+    private var bleManger: BluetoothManager? = null
     @SuppressLint("MissingPermission")
     fun initBle(){
 
+        bleManger = BluetoothManager("00:18:E4:40:00:06") {
+            Thread{
+                val uploadUrl: String = "http://${MainActivity.mMastersIp!!.split(":")[0]}:14515/api/temUpload"
+
+                var client = OkHttpClient()
+                // Create a JSON object with the required fields
+                val json = JSONObject()
+                json.put("stdId", MainActivity.userID)
+                json.put("time", getCurrentTime())
+                json.put("temperature", it)
+
+                // Create the request body
+                val requestBody: RequestBody = RequestBody.create("application/json".toMediaTypeOrNull(), json.toString())
+                val request = Request.Builder()
+                    .url(uploadUrl) // 设置请求的 URL
+                    .post(requestBody)
+                    .build()
+
+                client.newCall(request).enqueue(object : Callback {
+                    override fun onFailure(call: Call, e: IOException) {
+                        // 请求失败的处理
+                        e.printStackTrace()
+                    }
+
+                    override fun onResponse(call: Call, response: Response) {
+                        // 请求成功的处理
+                        val responseData = response.body?.string()
+                        Log.d("ChatGptMainActivity", "onResponse: $responseData")
+                    }
+                })
+
+            }.start()
+
+        }
+
+        bleManger!!.startSending()
+        bleManger!!.startReceiving()
 
 
 // 获取默认的蓝牙适配器
-        val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+        /*val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
 
 // 检查设备是否支持蓝牙
         if (bluetoothAdapter == null) {
@@ -423,7 +619,7 @@ class UsedByStudentMainActivity : AppCompatActivity() {
             }
         }
         val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
-        registerReceiver(receiver, filter)
+        registerReceiver(receiver, filter)*/
         /*Thread{
             while (true) {
                 try {
@@ -438,7 +634,7 @@ class UsedByStudentMainActivity : AppCompatActivity() {
     }
 
 
-    @SuppressLint("MissingPermission")
+    /*@SuppressLint("MissingPermission")
     inner class ConnectThread(device: BluetoothDevice, bluetoothAdaptera: BluetoothAdapter) : Thread() {
         private val device: BluetoothDevice
         private var bluetoothAdapter: BluetoothAdapter? = null
@@ -526,27 +722,27 @@ class UsedByStudentMainActivity : AppCompatActivity() {
                 e.printStackTrace()
             }
         }
-    }
+    }*/
 
-    private var dataBleSend: Int = -1
-    private fun sendBle(data: Int){
-        // 例如，通过OutputStream发送数据
-        // 例如，通过OutputStream发送数据
-        if (dataBleSend != data){
-            dataBleSend = data
-        }else{
-            return
-        }
-        try {
-            val outputStream = socket!!.outputStream
-            outputStream.write(data)
-            outputStream.flush()
-        } catch (e: IOException) {
-            //e.printStackTrace()
-        } catch(e: NullPointerException){
-            //e.printStackTrace()
-        }
-    }
+//    private var dataBleSend: Int = -1
+//    private fun sendBle(data: Int){
+//        // 例如，通过OutputStream发送数据
+//        // 例如，通过OutputStream发送数据
+//        if (dataBleSend != data){
+//            dataBleSend = data
+//        }else{
+//            return
+//        }
+//        try {
+//            val outputStream = socket!!.outputStream
+//            outputStream.write(data)
+//            outputStream.flush()
+//        } catch (e: IOException) {
+//            //e.printStackTrace()
+//        } catch(e: NullPointerException){
+//            //e.printStackTrace()
+//        }
+//    }
 
     private fun getCurrentTime(): String {
         val currentTime = LocalDateTime.now()
@@ -569,13 +765,16 @@ class UsedByStudentMainActivity : AppCompatActivity() {
             
             if (value > 45){
                 Log.i("平板","向前")
-                sendBle(77)
+//                sendBle(77)
+                bleManger?.send(77)
 
             }else if (value < 25) {
                 Log.i("平板","向后")
-                sendBle(78)
+//                sendBle(78)
+                bleManger?.send(78)
             }else{
-                sendBle(79)
+//                sendBle(79)
+                bleManger?.send(79)
             }
         }
 
@@ -594,15 +793,19 @@ class UsedByStudentMainActivity : AppCompatActivity() {
             if (value[1] > halfHeight + 20) {
                 Log.i("平板","向下")
 //                mBleService!!.sendData("G".toByteArray())
-                sendBle(70)
+//                sendBle(70)
+                bleManger?.send(70)
+
             }
             else if (value[1] < halfHeight - 20) {
                 Log.i("平板","向上")
 //                mBleService!!.sendData("H".toByteArray())
-                sendBle(71)
+//                sendBle(71)
+                bleManger?.send(71)
             }
             else{
-                sendBle(72)
+//                sendBle(72)
+                bleManger?.send(72)
             }
         }
 
